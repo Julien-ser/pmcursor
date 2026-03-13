@@ -519,77 +519,80 @@ Enable verbose logging by setting `DEBUG=True` in `.env`. This shows:
 
 ## Deployment
 
-### Local Production
+### Quick Deploy with Docker Compose (Recommended)
+
+The project includes a production-ready `docker-compose.yml` that configures:
+- Gunicorn with 4 workers
+- Persistent volumes for uploads, data, and database
+- Health checks
+- Proper environment configuration
 
 ```bash
-# 1. Set production environment
-cp .env.example .env
-# Edit .env:
-# DEBUG=False
-# APP_HOST=127.0.0.1  # or your server IP
+# 1. Set your OpenAI API key
+export OPENAI_API_KEY=sk-your-api-key-here
 
-# 2. Initialize database (automatic on first run)
+# 2. Start the service
+docker-compose up -d
 
-# 3. Run with production server
-python run.py
+# 3. Access at http://localhost:8000
 ```
 
-### Using Gunicorn (Production)
-
+To stop:
 ```bash
-# Install gunicorn
-pip install gunicorn
+docker-compose down
+```
 
-# Run with gunicorn
-gunicorn src.api.server:app \
-  --workers 4 \
-  --bind 0.0.0.0:8000 \
-  --access-logfile -
+To view logs:
+```bash
+docker-compose logs -f
 ```
 
 ### Docker
 
-Create `Dockerfile`:
-```dockerfile
-FROM python:3.11-slim
+A production-optimized `Dockerfile` is provided with:
+- Non-root user for security
+- Multi-stage build caching
+- Health checks
+- Gunicorn for production serving
 
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-ENV PYTHONUNBUFFERED=1
-EXPOSE 8000
-
-CMD ["python", "run.py"]
-```
-
-Build and run:
+Build and run manually:
 ```bash
 docker build -t pmcursor .
-docker run -p 8000:8000 -e OPENAI_API_KEY=sk-... pmcursor
+docker run -p 8000:8000 \
+  -e OPENAI_API_KEY=sk-... \
+  -e DEBUG=False \
+  -v $(pwd)/uploads:/app/uploads \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/pmcursor.db:/app/pmcursor.db \
+  pmcursor
 ```
 
-### HTTPS with Nginx
+### Nginx + HTTPS
 
-Configure Nginx as reverse proxy:
-```nginx
-server {
-    listen 80;
-    server_name pmcursor.example.com;
+For production HTTPS deployment, use the provided `nginx.conf` as a template:
 
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
+1. Copy and customize:
+   ```bash
+   sudo cp nginx.conf /etc/nginx/sites-available/pmcursor
+   # Edit server_name, SSL certificate paths
+   sudo nano /etc/nginx/sites-available/pmcursor
+   ```
+
+2. Enable the site:
+   ```bash
+   sudo ln -s /etc/nginx/sites-available/pmcursor /etc/nginx/sites-enabled/
+   sudo nginx -t  # Test configuration
+   sudo systemctl reload nginx
+   ```
+
+3. Ensure PMCursor is running on localhost:8000 (via Docker or direct)
 
 ### Environment Variables for Production
 
+`.env.example` provides all configurable options. For production, minimum required:
+
 ```env
+OPENAI_API_KEY=sk-your-key-here
 DEBUG=False
 APP_HOST=127.0.0.1
 APP_PORT=8000
@@ -606,6 +609,14 @@ cp pmcursor.db pmcursor.db.backup-$(date +%Y%m%d)
 # Restore
 cp pmcursor.db.backup-20240115 pmcursor.db
 ```
+
+### Kubernetes / Cloud Deployment
+
+For cloud platforms (Kubernetes, AWS ECS, etc.):
+1. Use the provided Dockerfile as base image
+2. Set environment variables via secrets management
+3. Use persistent volumes or cloud storage for uploads/data
+4. Configure load balancer with health checks at `/health`
 
 ## Development
 

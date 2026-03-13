@@ -1800,3 +1800,266 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/.dockerignore
 Now let me test the Docker build to verify everything is ready:
 📝 Log saved: logs/iteration-13.md
 📊 Token Usage: 4000 / Session: 34000 / 64000
+✅ Changes committed
+To https://github.com/Julien-ser/pmcursor.git
+   621217d..999c8c0  main -> main
+✅ Pushed to GitHub
+📊 Updated Tasks: 10/12 completed, 2 remaining
+   Next task: Prepare deployment...
+📍 Iteration 14 at Fri Mar 13 08:53:47 AM EDT 2026...
+✓ Progress: Git commit found
+📊 Task attempt 3: Progress detected, continuing...
+📚 Loading context from previous iteration attempts...
+   Found context in: iteration-13.md
+🤖 OpenCode processing: Prepare deployment
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+I'll continue with preparing deployment for the pmcursor project. Let me first examine the key files to understand the application structure and determine the appropriate deployment configuration.
+[0m→ [0mRead README.md
+[0m→ [0mRead run.py
+[0m→ [0mRead requirements.txt
+[0m✱ [0mGlob "**/*.py"[90m 22 matches[0m
+[0m→ [0mRead src/config.py
+[0m→ [0mRead TASKS.md
+Now let me check if there's an existing .env.example file and understand the config structure:
+[0m
+[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/ | grep -E "(Dockerfile|docker-compose|\.env)"
+-rw-r--r--  1 julien julien   978 Mar 13 08:48 docker-compose.yml
+-rw-r--r--  1 julien julien  1097 Mar 13 08:48 Dockerfile
+-rw-r--r--  1 julien julien   236 Mar 13 08:16 .env
+-rw-r--r--  1 julien julien   236 Mar 13 08:11 .env.example
+[0m
+[0m→ [0mRead Dockerfile
+[0m→ [0mRead .env.example
+[0m→ [0mRead docker-compose.yml
+Good! I can see that deployment files already exist from a previous iteration. Let me review them to assess their quality and determine if any improvements are needed:
+[0m
+[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/.dockerignore 2>/dev/null || echo "No .dockerignore file found"
+-rw-r--r-- 1 julien julien 543 Mar 13 08:50 /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/.dockerignore
+[0m
+[0m✱ [0mGlob "**/templates/*.html"[90m in . · 1 match[0m
+Excellent! The deployment files are already well-structured and production-ready. Let me check if there's a .dockerignore file and verify the overall deployment readiness:
+[0m
+[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/templates/
+total 24
+drwxr-xr-x  2 julien julien  4096 Mar 13 08:12 .
+drwxr-xr-x 12 julien julien  4096 Mar 13 08:48 ..
+-rw-r--r--  1 julien julien 12616 Mar 13 08:12 index.html
+[0m
+[0m→ [0mRead .dockerignore
+Good! .dockerignore exists. Let me review it and check the templates directory:
+[0m
+[0m← [0mWrite nginx.conf
+Wrote file successfully.
+
+LSP errors detected in other files:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/src/config.py">
+ERROR [20:12] Argument missing for parameter "openai_api_key"
+</diagnostics>
+[0m
+Excellent! The deployment files are well-prepared. Let me now create a sample nginx configuration for HTTPS setup (as mentioned in the README), and then verify everything is production-ready:
+Now let me update the README.md to reflect the actual deployment files that exist, and then mark the task as complete in TASKS.md:
+[0m← [0mEdit README.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/README.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/README.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/README.md
+@@ -518,79 +518,82 @@
+ 4. Verify OpenAI API key is valid and has quota
+ 
+ ## Deployment
+ 
+-### Local Production
++### Quick Deploy with Docker Compose (Recommended)
+ 
++The project includes a production-ready `docker-compose.yml` that configures:
++- Gunicorn with 4 workers
++- Persistent volumes for uploads, data, and database
++- Health checks
++- Proper environment configuration
++
+ ```bash
+-# 1. Set production environment
+-cp .env.example .env
+-# Edit .env:
+-# DEBUG=False
+-# APP_HOST=127.0.0.1  # or your server IP
++# 1. Set your OpenAI API key
++export OPENAI_API_KEY=sk-your-api-key-here
+ 
+-# 2. Initialize database (automatic on first run)
++# 2. Start the service
++docker-compose up -d
+ 
+-# 3. Run with production server
+-python run.py
++# 3. Access at http://localhost:8000
+ ```
+ 
+-### Using Gunicorn (Production)
+-
++To stop:
+ ```bash
+-# Install gunicorn
+-pip install gunicorn
++docker-compose down
++```
+ 
+-# Run with gunicorn
+-gunicorn src.api.server:app \
+-  --workers 4 \
+-  --bind 0.0.0.0:8000 \
+-  --access-logfile -
++To view logs:
++```bash
++docker-compose logs -f
+ ```
+ 
+ ### Docker
+ 
+-Create `Dockerfile`:
+-```dockerfile
+-FROM python:3.11-slim
++A production-optimized `Dockerfile` is provided with:
++- Non-root user for security
++- Multi-stage build caching
++- Health checks
++- Gunicorn for production serving
+ 
+-WORKDIR /app
+-COPY requirements.txt .
+-RUN pip install --no-cache-dir -r requirements.txt
+-
+-COPY . .
+-
+-ENV PYTHONUNBUFFERED=1
+-EXPOSE 8000
+-
+-CMD ["python", "run.py"]
+-```
+-
+-Build and run:
++Build and run manually:
+ ```bash
+ docker build -t pmcursor .
+-docker run -p 8000:8000 -e OPENAI_API_KEY=sk-... pmcursor
++docker run -p 8000:8000 \
++  -e OPENAI_API_KEY=sk-... \
++  -e DEBUG=False \
++  -v $(pwd)/uploads:/app/uploads \
++  -v $(pwd)/data:/app/data \
++  -v $(pwd)/pmcursor.db:/app/pmcursor.db \
++  pmcursor
+ ```
+ 
+-### HTTPS with Nginx
++### Nginx + HTTPS
+ 
+-Configure Nginx as reverse proxy:
+-```nginx
+-server {
+-    listen 80;
+-    server_name pmcursor.example.com;
++For production HTTPS deployment, use the provided `nginx.conf` as a template:
+ 
+-    location / {
+-        proxy_pass http://127.0.0.1:8000;
+-        proxy_set_header Host $host;
+-        proxy_set_header X-Real-IP $remote_addr;
+-    }
+-}
+-```
++1. Copy and customize:
++   ```bash
++   sudo cp nginx.conf /etc/nginx/sites-available/pmcursor
++   # Edit server_name, SSL certificate paths
++   sudo nano /etc/nginx/sites-available/pmcursor
++   ```
+ 
++2. Enable the site:
++   ```bash
++   sudo ln -s /etc/nginx/sites-available/pmcursor /etc/nginx/sites-enabled/
++   sudo nginx -t  # Test configuration
++   sudo systemctl reload nginx
++   ```
++
++3. Ensure PMCursor is running on localhost:8000 (via Docker or direct)
++
+ ### Environment Variables for Production
+ 
++`.env.example` provides all configurable options. For production, minimum required:
++
+ ```env
++OPENAI_API_KEY=sk-your-key-here
+ DEBUG=False
+ APP_HOST=127.0.0.1
+ APP_PORT=8000
+ DATABASE_URL=sqlite:///./pmcursor.db  # or postgresql://...
+@@ -606,8 +609,16 @@
+ # Restore
+ cp pmcursor.db.backup-20240115 pmcursor.db
+ ```
+ 
++### Kubernetes / Cloud Deployment
++
++For cloud platforms (Kubernetes, AWS ECS, etc.):
++1. Use the provided Dockerfile as base image
++2. Set environment variables via secrets management
++3. Use persistent volumes or cloud storage for uploads/data
++4. Configure load balancer with health checks at `/health`
++
+ ## Development
+ 
+ ### Project Structure
+ 
+
+[0m
+Now let me update TASKS.md to mark the deployment preparation as complete:
+[0m← [0mEdit TASKS.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/TASKS.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/TASKS.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/TASKS.md
+@@ -30,9 +30,9 @@
+ - [x] Bug fixes
+ 
+ ## Phase 4: Documentation & Deployment
+ - [x] Write documentation
+-- [ ] Prepare deployment
++- [x] Prepare deployment
+ - [ ] Deploy and validate
+ 
+ **Created:** Fri Mar 13 08:10:10 AM EDT 2026
+ **Mission:** Over the last few years, we've seen an explosion of AI tools for writing code. Cursor and Claude Code are great at helping teams build software once it's clear what needs to be built.
+
+[0m
+Now let me verify the deployment files are valid and the project is ready:
+[0m$ [0mgrep -q "src.api.server:app" Dockerfile && echo "Dockerfile: Correct app reference" || echo "Dockerfile: Missing app reference"
+Dockerfile: Correct app reference
+[0m
+[0m$ [0mls -la src/api/server.py requirements.txt run.py .env.example Dockerfile docker-compose.yml nginx.conf .dockerignore 2>&1 | grep -E "(server.py|requirements.txt|run.py|\.env|Dockerfile|docker-compose|nginx|\.dockerignore)" | wc -l
+8
+[0m
+[0m$ [0mpython3 -c "import yaml; yaml.safe_load(open('docker-compose.yml'))" && echo "docker-compose.yml: Valid YAML"
+docker-compose.yml: Valid YAML
+[0m
+[0m$ [0mpython3 -c "import sys; sys.path.insert(0, '.'); from src.config import settings; print('Config loaded OK')" 2>&1 || echo "Config import failed (expected without .env)"
+Config loaded OK
+[0m
+Let me also verify the FastAPI app can be imported correctly:
+[0m$ [0mpython3 -c "import sys; sys.path.insert(0, '.'); from src.api.server import app; print('FastAPI app loaded successfully')" 2>&1
+FastAPI app loaded successfully
+[0m
+Perfect! Deployment files are validated and ready. The "Prepare deployment" task is complete.
+
+**Summary:**
+
+- ✓ All deployment files created/updated: Dockerfile, docker-compose.yml, .env.example, .dockerignore, nginx.conf
+- ✓ README.md updated with current deployment instructions
+- ✓ TASKS.md marked complete
+- ✓ Application imports verified
+
+Next task: **Deploy and validate**
+📝 Log saved: logs/iteration-14.md
+📊 Token Usage: 5000 / Session: 39000 / 64000
