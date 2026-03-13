@@ -260,12 +260,21 @@ class TestAnalysisAPI:
             "/api/projects", params={"name": "No Data Project", "description": "Test"}
         )
         project_id = response.json()["id"]
+        print(f"Project ID: {project_id}")
+        from pathlib import Path
+
+        upload_dir = Path("uploads") / str(project_id)
+        print(f"Upload dir exists: {upload_dir.exists()}")
+        if upload_dir.exists():
+            print(f"Files in upload dir: {list(upload_dir.iterdir())}")
 
         # Try to analyze without data
         response = client.post(
             f"/api/projects/{project_id}/analyze",
             params={"query": "What should we build?"},
         )
+        if response.status_code != 200:
+            print(f"Error response: {response.status_code} - {response.text}")
         assert response.status_code == 200
         data = response.json()
         assert "message" in data
