@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMCursor - AI Product Management Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; background-color: #f8f9fa; }
+        .container { max-width: 1200px; }
+        .feature-card { margin-bottom: 20px; }
+        .task-item { margin-left: 20px; }
+        .upload-area { border: 2px dashed #dee2e6; padding: 40px; text-align: center; border-radius: 10px; }
+        .upload-area.dragover { border-color: #007bff; background-color: #e7f3ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">PMCursor</h1>
+        <p class="lead">AI-Powered Product Management Assistant</p>
+        <p>Upload customer interviews and product usage data to get feature recommendations and development tasks.</p>
+
+        <!-- Create Project Section -->
+        <div class="card mb-4">
+            <div class="card-header">1. Create Project</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <input type="text" id="projectName" class="form-control mb-2" placeholder="Project Name">
+                        <textarea id="projectDescription" class="form-control mb-2" rows="2" placeholder="Project Description (optional)"></textarea>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button onclick="createProject()" class="btn btn-primary">Create Project</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Files Section -->
+        <div class="card mb-4">
+            <div class="card-header">2. Upload Data</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <select id="projectSelect" class="form-select">
+                        <option value="">Select a project...</option>
+                    </select>
+                </div>
+                <div id="uploadArea" class="upload-area">
+                    <p>Drag & drop files here or click to select</p>
+                    <p class="text-muted">Supported formats: TXT, PDF, CSV, JSON, MD</p>
+                    <input type="file" id="fileInput" class="d-none" multiple>
+                </div>
+                <div id="uploadList" class="mt-3"></div>
+            </div>
+        </div>
+
+        <!-- Analyze Section -->
+        <div class="card mb-4">
+            <div class="card-header">3. Analyze & Get Recommendations</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="analysisQuery" class="form-label">What would you like to know?</label>
+                    <input type="text" id="analysisQuery" class="form-control" value="What should we build next?" placeholder="Enter your query...">
+                </div>
+                <button onclick="analyzeProject()" class="btn btn-success">Generate Recommendations</button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="d-none">
+            <div class="card">
+                <div class="card-header">Analysis Results</div>
+                <div class="card-body">
+                    <h5 id="featureTitle" class="card-title"></h5>
+                    <p id="featureDescription" class="card-text"></p>
+
+                    <h6>Justification</h6>
+                    <p id="featureJustification"></p>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>UI Changes</h6>
+                            <div id="uiChanges" class="border p-2" style="min-height: 100px;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Data Model Changes</h6>
+                            <div id="dataModelChanges" class="border p-2" style="min-height: 100px;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Workflow Changes</h6>
+                            <div id="workflowChanges" class="border p-2" style="min-height: 100px;"></div>
+                        </div>
+                    </div>
+
+                    <h6 class="mt-3">Development Tasks</h6>
+                    <ul id="taskList" class="list-group"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="d-none text-center my-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Analyzing your data... This may take a minute.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = window.location.origin;
+
+        let currentProjectId = null;
+        let projects = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProjects();
+            setupUploadArea();
+        });
+
+        async function loadProjects() {
+            try {
+                const response = await fetch(`${API_BASE}/api/projects`);
+                projects = await response.json();
+                const select = document.getElementById('projectSelect');
+                select.innerHTML = '<option value="">Select a project...</option>';
+                projects.forEach(p => {
+                    select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+                });
+            } catch (error) {
+                console.error('Failed to load projects:', error);
+            }
+        }
+
+        async function createProject() {
+            const name = document.getElementById('projectName').value;
+            const description = document.getElementById('projectDescription').value;
+
+            if (!name) {
+                alert('Please enter a project name');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/projects`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name, description})
+                });
+                const project = await response.json();
+                alert(`Project created! ID: ${project.id}`);
+                loadProjects();
+                document.getElementById('projectName').value = '';
+                document.getElementById('projectDescription').value = '';
+            } catch (error) {
+                alert('Failed to create project: ' + error);
+            }
+        }
+
+        function setupUploadArea() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    handleFiles(e.target.files);
+                }
+            });
+        }
+
+        async function handleFiles(files) {
+            const projectId = document.getElementById('projectSelect').value;
+            if (!projectId) {
+                alert('Please select a project first');
+                return;
+            }
+
+            const uploadList = document.getElementById('uploadList');
+            uploadList.innerHTML = '<h5>Uploaded Files:</h5>';
+
+            for (const file of files) {
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const response = await fetch(`${API_BASE}/api/projects/${projectId}/uploads`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+
+                    uploadList.innerHTML += `<div class="alert alert-success">Uploaded: ${file.name}</div>`;
+                } catch (error) {
+                    uploadList.innerHTML += `<div class="alert alert-danger">Failed to upload ${file.name}: ${error}</div>`;
+                }
+            }
+        }
+
+        async function analyzeProject() {
+            const projectId = document.getElementById('projectSelect').value;
+            const query = document.getElementById('analysisQuery').value;
+
+            if (!projectId) {
+                alert('Please select a project');
+                return;
+            }
+
+            document.getElementById('loading').classList.remove('d-none');
+            document.getElementById('results').classList.add('d-none');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/projects/${projectId}/analyze?query=${encodeURIComponent(query)}`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Analysis failed');
+                }
+
+                const data = await response.json();
+                displayResults(data.feature);
+            } catch (error) {
+                alert('Analysis failed: ' + error.message);
+            } finally {
+                document.getElementById('loading').classList.add('d-none');
+            }
+        }
+
+        function displayResults(feature) {
+            document.getElementById('featureTitle').textContent = feature.title;
+            document.getElementById('featureDescription').textContent = feature.description;
+            document.getElementById('featureJustification').textContent = feature.justification;
+            document.getElementById('uiChanges').textContent = feature.ui_changes || 'None specified';
+            document.getElementById('dataModelChanges').textContent = feature.data_model_changes || 'None specified';
+            document.getElementById('workflowChanges').textContent = feature.workflow_changes || 'None specified';
+
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            feature.tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerHTML = `
+                    <strong>${task.title}</strong> (${task.task_type}, ~${task.estimated_hours || '?'}h)
+                    <p class="mb-0">${task.description}</p>
+                `;
+                taskList.appendChild(li);
+            });
+
+            document.getElementById('results').classList.remove('d-none');
+        }
+
+        // Refresh uploads when project changes
+        document.getElementById('projectSelect').addEventListener('change', async (e) => {
+            const projectId = e.target.value;
+            if (!projectId) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/projects/${projectId}/uploads`);
+                const uploads = await response.json();
+
+                const uploadList = document.getElementById('uploadList');
+                if (uploads.length === 0) {
+                    uploadList.innerHTML = '<p>No files uploaded yet.</p>';
+                } else {
+                    uploadList.innerHTML = '<h5>Uploaded Files:</h5><ul>';
+                    uploads.forEach(u => {
+                        uploadList.innerHTML += `<li>${u.filename} (${u.file_type})</li>`;
+                    });
+                    uploadList.innerHTML += '</ul>';
+                }
+            } catch (error) {
+                console.error('Failed to load uploads:', error);
+            }
+        });
+    </script>
+</body>
+</html>

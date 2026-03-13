@@ -15,7 +15,7 @@ We think there's an opportunity to build a "Cursor for product management": an A
 As agents increasingly take the first pass at implementation, the way we define and communicate "what to build" needs to change.
 
 ## Phase 1: Setup & Planning
-- [x] Review requirements and design architecture
+- [ ] Review requirements and design architecture
 - [ ] Set up development environment and dependencies
 - [ ] Create project structure
 
