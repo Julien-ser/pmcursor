@@ -44,6 +44,5 @@ TASKS.md
 TASKS_original.md
 *.md
 
-# Docker
-Dockerfile*
-docker-compose*.yml
+# Docker build artifacts (keep Dockerfile and docker-compose in context)
+# (no patterns to ignore Docker related config files)

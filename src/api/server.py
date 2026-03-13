@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import Request
 from contextlib import asynccontextmanager
+import uvicorn
 
 from src.config import settings
 from src.models.database import Base, engine
@@ -12,15 +13,6 @@ from src.api import routes as api_routes
 
 # Database session factory is already defined in database.py as SessionLocal
 # We just need the engine for creating tables
-
-
-def get_db():
-    """Dependency for database sessions."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @asynccontextmanager
