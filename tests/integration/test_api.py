@@ -253,28 +253,21 @@ class TestAnalysisAPI:
         assert data["feature"]["title"] == "Recommended Feature"
         assert len(data["feature"]["tasks"]) == 1
 
-    def test_analyze_project_no_data(self, client, db):
+    @patch("src.api.routes.data_processor.process_project_files", return_value="")
+    def test_analyze_project_no_data(self, mock_process, client, db):
         """Test analysis with no uploaded data."""
         # Create project without uploads
         response = client.post(
-            "/api/projects", params={"name": "No Data Project", "description": "Test"}
+            "/api/projects",
+            params={"name": "No Data Project", "description": "Test"},
         )
         project_id = response.json()["id"]
-        print(f"Project ID: {project_id}")
-        from pathlib import Path
-
-        upload_dir = Path("uploads") / str(project_id)
-        print(f"Upload dir exists: {upload_dir.exists()}")
-        if upload_dir.exists():
-            print(f"Files in upload dir: {list(upload_dir.iterdir())}")
 
         # Try to analyze without data
         response = client.post(
             f"/api/projects/{project_id}/analyze",
             params={"query": "What should we build?"},
         )
-        if response.status_code != 200:
-            print(f"Error response: {response.status_code} - {response.text}")
         assert response.status_code == 200
         data = response.json()
         assert "message" in data
