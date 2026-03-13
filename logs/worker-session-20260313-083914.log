@@ -1565,3 +1565,121 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/TASKS.md
 
 [0m
 📝 Log saved: logs/iteration-11.md
+📊 Token Usage: 8250 / Session: 26500 / 64000
+Unstaged changes after reset:
+M	logs/worker-session-20260313-083914.log
+✅ Changes committed
+To https://github.com/Julien-ser/pmcursor.git
+   07472c3..e2d4435  main -> main
+✅ Pushed to GitHub
+📊 Updated Tasks: 10/12 completed, 2 remaining
+   Next task: Prepare deployment...
+📍 Iteration 12 at Fri Mar 13 08:47:19 AM EDT 2026...
+🤖 OpenCode processing: Prepare deployment
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+I'll help you prepare deployment for the pmcursor project. Let me start by exploring the project structure to understand what kind of application this is and what deployment configuration might be needed.
+[0m✗ [0mread failed
+[91m[1mError: [0mFile not found: /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/package.json
+[0m✱ [0mGlob "**/*"[90m 100 matches[0m
+[0m→ [0mRead README.md
+Let me check the requirements.txt and look for any existing deployment configuration files:
+[0m✱ [0mGlob "Dockerfile*"[90m 0 matches[0m
+[0m→ [0mRead requirements.txt
+[0m→ [0mRead run.py
+[0m✱ [0mGlob "*.yml"[90m 0 matches[0m
+[0m✱ [0mGlob "docker-compose*"[90m 0 matches[0m
+[0m→ [0mRead TASKS_original.md
+Now I'll check the TASKS.md to understand the current status and what needs to be updated:
+[0m✱ [0mGlob "TASKS.md"[90m 1 match[0m
+Let me check if there's also a TASKS.md file (without "_original"):
+[0m→ [0mRead TASKS.md
+[0m
+[0m# [0mTodos
+[ ] Add gunicorn to requirements.txt for production
+[ ] Create Dockerfile for containerized deployment
+[ ] Create docker-compose.yml for orchestration
+[ ] Create .dockerignore to optimize Docker builds
+[ ] Create production startup script (start.sh)
+[ ] Update README.md with deployment validation steps
+[ ] Mark task complete in TASKS.md
+[0m
+Good! I can see the task "Prepare deployment" on line 34 is unchecked. Now I need to create the actual deployment configuration files that are referenced but missing in the README. Let me create a comprehensive deployment setup:
+Now let me add gunicorn to requirements.txt for production deployment:
+[0m← [0mEdit requirements.txt
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/requirements.txt
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/requirements.txt
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pmcursor/requirements.txt
+@@ -12,4 +12,5 @@
+ numpy==1.24.3
+ pytest==7.4.3
+ pytest-asyncio==0.21.1
+ httpx==0.25.1
++gunicorn==21.2.0
+
+[0m
+[0m# [0mTodos
+[x] Add gunicorn to requirements.txt for production
+[ ] Create Dockerfile for containerized deployment
+[ ] Create docker-compose.yml for orchestration
+[ ] Create .dockerignore to optimize Docker builds
+[ ] Create production startup script (start.sh)
+[ ] Update README.md with deployment validation steps
+[ ] Mark task complete in TASKS.md
+[0m
+[0m← [0mWrite Dockerfile
+Wrote file successfully.
+[0m
+Now I'll create the Dockerfile:
+[0m# [0mTodos
+[x] Add gunicorn to requirements.txt for production
+[x] Create Dockerfile for containerized deployment
+[ ] Create docker-compose.yml for orchestration
+[ ] Create .dockerignore to optimize Docker builds
+[ ] Create production startup script (start.sh)
+[ ] Update README.md with deployment validation steps
+[ ] Mark task complete in TASKS.md
+[0m
+Now creating docker-compose.yml:
+[0m← [0mWrite docker-compose.yml
+Wrote file successfully.
+[0m
+[0m# [0mTodos
+[x] Add gunicorn to requirements.txt for production
+[x] Create Dockerfile for containerized deployment
+[x] Create docker-compose.yml for orchestration
+[ ] Create .dockerignore to optimize Docker builds
+[ ] Create production startup script (start.sh)
+[ ] Update README.md with deployment validation steps
+[ ] Mark task complete in TASKS.md
+[0m
+[0m← [0mWrite .dockerignore
+Wrote file successfully.
+[0m
+[0m# [0mTodos
+[x] Add gunicorn to requirements.txt for production
+[x] Create Dockerfile for containerized deployment
+[x] Create docker-compose.yml for orchestration
+[x] Create .dockerignore to optimize Docker builds
+[ ] Create production startup script (start.sh)
+[ ] Update README.md with deployment validation steps
+[ ] Mark task complete in TASKS.md
+[0m
+Now I'll create a production startup script:
+[0m← [0mWrite start.sh
+Wrote file successfully.
+[0m
+[0m$ [0mchmod +x start.sh
+[0m
+[0m# [0mTodos
+[x] Add gunicorn to requirements.txt for production
+[x] Create Dockerfile for containerized deployment
+[x] Create docker-compose.yml for orchestration
+[x] Create .dockerignore to optimize Docker builds
+[x] Create production startup script (start.sh)
+[ ] Update README.md with deployment validation steps
+[ ] Mark task complete in TASKS.md
+[0m
+📝 Log saved: logs/iteration-12.md

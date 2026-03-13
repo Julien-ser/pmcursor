@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.venv
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific
+.env
+.env.local
+.env.*.local
+.pmcursor.db
+pmcursor.db
+logs/
+uploads/
+data/
+.git/
+.gitignore
+README.md
+TASKS.md
+TASKS_original.md
+*.md
+
+# Docker
+Dockerfile*
+docker-compose*.yml

@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  pmcursor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pmcursor
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-your-api-key-here}
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8000
+      - DEBUG=False
+      - DATABASE_URL=sqlite:///./pmcursor.db
+      - UPLOAD_DIR=/app/uploads
+      - DATA_DIR=/app/data
+      - MAX_UPLOAD_SIZE_MB=100
+    volumes:
+      - uploads:/app/uploads
+      - data:/app/data
+      - pmcursor_db:/app/pmcursor.db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    # For production with many workers, increase resources
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2.0'
+    #       memory: 2G
+
+volumes:
+  uploads:
+  data:
+  pmcursor_db:
