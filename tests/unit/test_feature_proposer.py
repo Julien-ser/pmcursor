@@ -41,6 +41,8 @@ class TestFeatureProposer:
             }
         )
 
+        # Replace the client with the mock
+        feature_proposer.client = mock_openai.return_value
         feature_proposer.client.chat.completions.create.return_value = mock_response
 
         result = feature_proposer.generate_proposal(
@@ -73,6 +75,7 @@ class TestFeatureProposer:
         ```
         """
 
+        feature_proposer.client = mock_openai.return_value
         feature_proposer.client.chat.completions.create.return_value = mock_response
 
         result = feature_proposer.generate_proposal("Context", "Query")
@@ -86,6 +89,7 @@ class TestFeatureProposer:
         mock_response.choices = [Mock()]
         mock_response.choices[0].message.content = "Not JSON at all"
 
+        feature_proposer.client = mock_openai.return_value
         feature_proposer.client.chat.completions.create.return_value = mock_response
 
         result = feature_proposer.generate_proposal("Context", "Query")
@@ -97,6 +101,7 @@ class TestFeatureProposer:
     @patch("src.core.feature_proposer.OpenAI")
     def test_generate_proposal_api_error(self, mock_openai, feature_proposer):
         """Test handling API errors."""
+        feature_proposer.client = mock_openai.return_value
         feature_proposer.client.chat.completions.create.side_effect = Exception(
             "API Error"
         )

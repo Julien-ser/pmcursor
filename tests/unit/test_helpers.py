@@ -1,5 +1,6 @@
 """Tests for helper functions."""
 
+import json
 import pytest
 
 from src.utils.helpers import (
@@ -54,12 +55,12 @@ class TestHelpers:
         """Test truncate_text with long text."""
         text = "This is a very long text that exceeds the limit"
         result = truncate_text(text, 20)
-        assert result == "This is a very long ..."
+        assert result == "This is a very lo..."
         assert len(result) == 20
 
     def test_truncate_text_exact_length(self):
         """Test truncate_text with exact length."""
-        text = "Exactly twenty chars here"
+        text = "12345678901234567890"  # exactly 20 characters
         result = truncate_text(text, 20)
         assert result == text
 

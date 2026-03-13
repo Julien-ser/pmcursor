@@ -11,13 +11,15 @@ from src.storage.file_manager import FileManager
 class TestFileManager:
     """Test suite for FileManager."""
 
-    def test_init_creates_directories(self, temp_upload_dir):
+    def test_init_creates_directories(self, temp_upload_dir, monkeypatch):
         """Test that FileManager creates necessary directories."""
-        from src.config import Settings
+        from src.config import settings
 
-        settings = Settings()
-        settings.upload_dir = os.path.join(temp_upload_dir, "uploads")
-        settings.data_dir = os.path.join(temp_upload_dir, "data")
+        # Update the actual global settings
+        upload_path = os.path.join(temp_upload_dir, "uploads")
+        data_path = os.path.join(temp_upload_dir, "data")
+        monkeypatch.setattr(settings, "upload_dir", upload_path)
+        monkeypatch.setattr(settings, "data_dir", data_path)
 
         fm = FileManager()
         assert os.path.exists(settings.upload_dir)

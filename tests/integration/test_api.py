@@ -9,12 +9,14 @@ from src.api.server import app
 from src.models.database import Base, get_db, ProcessingStatus
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 
-# Create test database
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_integration.db"
+# Create test database - use in-memory SQLite
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    "sqlite:///:memory:",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -31,28 +33,23 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def client():
     """Create a test client."""
     Base.metadata.create_all(bind=engine)
     with TestClient(app) as c:
         yield c
     Base.metadata.drop_all(bind=engine)
-    # Clean up test db file
-    if os.path.exists("./test_integration.db"):
-        os.remove("./test_integration.db")
 
 
 @pytest.fixture(scope="function")
 def db():
-    """Create a fresh database session."""
-    Base.metadata.create_all(bind=engine)
+    """Create a database session for tests that need direct DB access."""
     db = TestingSessionLocal()
     try:
         yield db
     finally:
         db.close()
-        Base.metadata.drop_all(bind=engine)
 
 
 class TestHealthEndpoint:
