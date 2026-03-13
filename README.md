@@ -2,6 +2,8 @@
 
 **AI-Powered Product Management Assistant**
 
+**Status:** ✅ Deployed and Validated - Production Ready
+
 PMCursor is an AI-native system that helps teams figure out what to build. Upload customer interviews and product usage data, ask "what should we build next?", and get comprehensive feature recommendations complete with justifications, proposed changes to UI/data model/workflows, and broken-down development tasks for your coding agents.
 
 ## Features
