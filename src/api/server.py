@@ -4,22 +4,14 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import Request
 from contextlib import asynccontextmanager
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-import uvicorn
 
 from src.config import settings
-from src.models.database import Base
+from src.models.database import Base, engine
 from src.api import routes as api_routes
 
 
-# Database setup
-DATABASE_URL = settings.database_url
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Database session factory is already defined in database.py as SessionLocal
+# We just need the engine for creating tables
 
 
 def get_db():
